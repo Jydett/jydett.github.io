@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" href="./favicon.png" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="preload" href="./CopperplateGothic-Bold.woff2" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="./Tahoma.woff2" as="font" type="font/woff2" crossorigin>
+		
+		<link href="./_app/immutable/assets/2.bb38a80a.css" rel="stylesheet">
+		<link rel="modulepreload" href="./_app/immutable/entry/start.f8659f26.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/scheduler.b95eede2.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/singletons.21a19b54.js">
+		<link rel="modulepreload" href="./_app/immutable/entry/app.6c245451.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/index.099db1f9.js">
+		<link rel="modulepreload" href="./_app/immutable/nodes/0.5fa717eb.js">
+		<link rel="modulepreload" href="./_app/immutable/nodes/2.b413cd9e.js">
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">  <div id="content" style="display: inline-block" class="svelte-puut00"><div class="spellCardBackground svelte-puut00"></div> <div class="illustrationUrl svelte-puut00"></div> <div class="newFighterCardSpell svelte-puut00"><div class="newFighterCardBackground svelte-puut00"></div> <div class="iconBG svelte-puut00" style="background: url('#');"></div> <div class="fighterCardNameSmall styledLightFont defaultDarkColor textContainer svelte-puut00"></div> <div class="spellFighterCardActionPoints styledLightLargeFont whiteColor textContainer svelte-puut00">0</div> <div class="fighterCardTarget defaultSmallFont whiteColor textContainer svelte-puut00" title="Cible
+
+Libre signifie que le sort est lançable où on veut. 
+Vide signifie que c'est un sort qu'il faut lancer sur une case libre. 
+Alliés signifie que c'est un sort qui n'affecte que les alliés. 
+Moi signifie que c'est un sort qui doit être lancé sur ce combattant exclusivement. 
+Invoc signifie que c'est un sort qui doit être lancé sur une invocation.">Libre</div> <div class="fighterCardAOE styledLightFont whiteColor textContainer svelte-puut00" style="bottom: 188px;left: 221px;">0</div> <div class="fighterCardAOE styledLightFont whiteColor textContainer svelte-puut00" style="bottom: 310px;left: 221px;">0</div> <div class="AOEContainer svelte-puut00" title="Zone d'effet
+
+C'est la zone d'effet que ton sort touchera. 
+La valeur en dessous indique la taille de la zone. 
+Un point signifie que ton sort touche une seule case. 
+Une croix signifie que ton sort touche une zone dans toutes les directions. 
+Une ligne signifie que ton sort touche toutes les cibles en ligne droite."><div class="AoeIcon AoeIconPoint svelte-puut00"></div></div> <div class="fighterCardAOE styledLightFont whiteColor textContainer svelte-puut00" style="bottom: 269px;left: 221px;">0</div> <div class="fighterCardDescription defaultBlackColor defaultFont svelte-puut00" style="white-space: pre-line">  </div> <div class="backgroundDescription defaultBlackColor defaultSmallFont textContainer svelte-puut00" style="text-align: center"><i class="svelte-puut00"></i></div> <div class="fighterCardValue smallStyledLightTitleFont defaultDarkColor svelte-puut00" style="white-space: pre-line" title="Coût en kama">0</div></div></div> <div id="form" style="display: inline-block; margin-left: 15px"><label for="APCost" data-svelte-h="svelte-5d22fm">APCost</label> <input id="APCost" type="number" min="0" value="0"> <br> <label for="Name" data-svelte-h="svelte-3u088e">Name</label> <input id="Name" value=""> <br> <label for="AOE" data-svelte-h="svelte-19j9en0">AOE Type</label> <select id="AOE"><option value="[object Object]">Point </option><option value="[object Object]">Line </option><option value="[object Object]">Cross </option></select> <label for="AOESize" data-svelte-h="svelte-oji8s8">AOE Size</label> <input id="AOESize" type="number" min="0" value="0"> <br> <label for="RangeMin" data-svelte-h="svelte-awrl8m">Range min</label> <input id="RangeMin" type="number" min="0" value="0"> <label for="RangeMax" data-svelte-h="svelte-bzy0nu">- max</label> <input id="RangeMax" type="number" min="0" value="0"> <br> <label for="Delay" data-svelte-h="svelte-17ivfdk">Delay</label> <input id="Delay" type="number" min="0" value="0"> <br> <button data-svelte-h="svelte-12oekwj">DMG ALL</button> <button data-svelte-h="svelte-1wowoon">DMG EARTH</button> <button data-svelte-h="svelte-12ppt4o">DMG WATER</button> <button data-svelte-h="svelte-1djic7i">DMG FIRE</button> <button data-svelte-h="svelte-8ppv5f">DMG WIND</button> <br> <button data-svelte-h="svelte-4tgh5e">RES ALL</button> <button data-svelte-h="svelte-1e1x3t7">RES EARTH</button> <button data-svelte-h="svelte-16wf5sc">RES WATER</button> <button data-svelte-h="svelte-1rin16u">RES FIRE</button> <button data-svelte-h="svelte-38leaf">RES WIND</button> <br> <button data-svelte-h="svelte-bd6qmo">TURN</button> <br> <label for="Effect" data-svelte-h="svelte-zc2a4m">Effect</label> <textarea id="Effect"></textarea> <br> <label for="EffectCrit" data-svelte-h="svelte-o8uu5i">Effect Critique</label> <textarea id="EffectCrit"></textarea> <br> <label for="Usage" data-svelte-h="svelte-11qe5o0">Usage</label> <textarea id="Usage"></textarea> <br> <label for="Target" data-svelte-h="svelte-10wneci">Target</label> <select id="Target"><option value="[object Object]">Libre </option><option value="[object Object]">Vide </option><option value="[object Object]">Alliés </option><option value="[object Object]">Moi </option><option value="[object Object]">Invoc </option></select> <br> <label for="Desc" data-svelte-h="svelte-8gwwbt">Description</label> <textarea id="Desc"></textarea> <br> <label for="Value" data-svelte-h="svelte-6dlazs">Value</label> <input id="Value" type="number" min="0" value="0"> <br> <label for="Image" data-svelte-h="svelte-djrwew">Image (197 x 143)</label> <input id="Image" type="file" accept="image/jpeg, image/png, image/jpg"> <br> <button data-svelte-h="svelte-13jabvw">Save</button> </div> 
+			
+			<script>
+				{
+					__sveltekit_9reok7 = {
+						assets: "/card",
+						base: new URL(".", location).pathname.slice(0, -1),
+						env: {}
+					};
+
+					const element = document.currentScript.parentElement;
+
+					const data = [null,null];
+
+					Promise.all([
+						import("./_app/immutable/entry/start.f8659f26.js"),
+						import("./_app/immutable/entry/app.6c245451.js")
+					]).then(([kit, app]) => {
+						kit.start(app, element, {
+							node_ids: [0, 2],
+							data,
+							form: null,
+							error: null
+						});
+					});
+				}
+			</script>
+		</div>
+	</body>
+</html>
