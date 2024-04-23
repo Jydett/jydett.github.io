@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Isometric Tile Test</title>
+    <link rel="stylesheet" type="text/css" href="./css/style.css">
+    <script src="./js/jquery-2.1.1.js"></script>
+    <script src="./js/fightmapinfo.js"></script>
+    <script src="./js/isometric.js"></script>
+    <script src="./js/map_10.js"></script>
+    <script>$(function() { Isometric.run() });</script>
+  </head>
+  <body>
+    <canvas id="isocanvas"></canvas>
+  <div style="position: absolute; top: 0; right: 0; background-color: gainsboro; border: 1px darkgrey solid; padding: 5px">
+      <h3>Controls:</h3>
+      <div><b>P:</b> activate altitude padding</div>
+      <div><b>M:</b> show out of map cells</div>
+      <div><b>Z:</b> toggle flat mode</div>
+      <div><b>S:</b> toggle special cells img</div>
+      <div><b>Arrows:</b> move selected chunk</div>
+      <h3>Legend:</h3>
+      <div><span class="colorpreview" style="background-color: white"></span> walkable</div>
+      <div><span class="colorpreview" style="background-color: red"></span> not-walkable</div>
+      <div><span class="colorpreview" style="background-color: grey"></span> out of map</div>
+      <div><span class="colorpreview" style="background-color: rgba(173,180,255,0.5)"></span> team positions 1</div>
+      <div><span class="colorpreview" style="background-color: rgba(255,213,173,0.5)"></span> team positions 2</div>
+      <div><span class="colorpreview" style="background-color: rgba(0,255,255,0.77)"></span> coach positions</div>
+      <div><span class="colorpreview" style="background-color: rgba(255,255,0,0.5)"></span> special cells</div>
+      <h3>Current map id: <span id="mapId"></span></h3>
+  </div>
+  
+  </body>
+</html>
