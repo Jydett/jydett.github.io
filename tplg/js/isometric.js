@@ -5,7 +5,7 @@ const CELL_OFFSET = {
     1003: 7,
     1004: 3,
     1005: 2,
-    1006: 5, 
+    1006: 5,
     1007: 4,
     1008: 1,
     1009: 0
@@ -21,7 +21,6 @@ const IsometricMap = {
     map: []
 };
 
-
 const Isometric = {
     id: 5,
     tileColumnOffset: 32, // pixels
@@ -29,7 +28,8 @@ const Isometric = {
     ZOffset: -4, // pixels
     altitudePadding: 4,
     specialCaseHashBais: 100,
-    hideOffMap: false,
+    hideOffMap: true,
+    showOnlyZ: false,
     x: 0,
     y: 0,
 
@@ -54,15 +54,16 @@ const Isometric = {
 
     run: function () {
         this.init();
-        this.changeMap(this.id)
+        this.changeMap()
     },
 
     init: function () {
         this.specialCellsImg.src = "./css/bonus_guide.png";
         this.canvas = $('#isocanvas');
-        $('#mapSelect').on('change', (e) => {
-            this.changeMap(parseInt(e.target.value));
-        });
+        $('#mapSelect')
+            .on('change', (e) => {
+                this.changeMap(parseInt(e.target.value));
+            });
         this.context = this.canvas[0].getContext("2d");
 
         this.loadSettings();
@@ -109,7 +110,18 @@ const Isometric = {
                     self.drawSpecialCellsImg = !self.drawSpecialCellsImg;
                     self.saveSettings();
                     self.redrawTiles();
-                } else if (event.which === 80) {
+                } else if (event.which === 72) {
+                    self.showOnlyZ = !self.showOnlyZ;
+
+                    for (let el of document.getElementsByClassName("zi")) {
+                        el.style.color = self.showOnlyZ ? 'black' : 'green';
+                    }
+                    for (let el of document.getElementsByClassName("height")) {
+                        el.style.color = self.showOnlyZ ? 'green' : 'black';
+                    }
+                    self.saveSettings();
+                    self.redrawTiles();
+                } else if (event.which === 70) {
                     if (self.altitudePadding === 0) {
                         self.altitudePadding = 4;
                     } else {
@@ -159,15 +171,31 @@ const Isometric = {
                     // Update the last mouse position
                     lastMouseX = e.clientX;
                     lastMouseY = e.clientY;
+                    self.redrawTiles();
                 }
-                self.redrawTiles();
             });
 
         $(window)
             .on('click', function () {
-                console.log(-self.selectedTileX, self.selectedTileY)
+                console.log(self.selectedTileX, self.selectedTileY)
                 self.showCoordinates = !self.showCoordinates;
-                self.redrawTiles();
+                let selectedCells = [];
+                const numberOfCells = IsometricMap.map.length
+                for (let i = 0; i < numberOfCells; i++) {
+                    let cell = IsometricMap.map[i];
+                    if (cell.x === self.selectedTileX && cell.y === self.selectedTileY) {
+                        selectedCells.push(cell);
+                    }
+                }
+                console.log(selectedCells)
+                if (selectedCells.length == 0) selectedCells = 'No cell found';
+                if (selectedCells.length == 1) selectedCells = selectedCells[0];
+                document.getElementById('selectedCells').innerText = JSON.stringify(selectedCells, (key, value) => {
+                                                                                        return typeof value === 'bigint'
+                                                                                            ? value.toString()
+                                                                                            : value;
+                                                                                    } // return everything else unchanged
+                , 2);
             });
     },
 
@@ -179,6 +207,15 @@ const Isometric = {
             this.ZOffset = settings['ZOffset'] ?? this.ZOffset;
             this.altitudePadding = settings['altitudePadding'] ?? this.altitudePadding;
             this.drawSpecialCellsImg = settings['drawSpecialCellsImg'] ?? this.drawSpecialCellsImg;
+            this.showOnlyZ = settings['showOnlyZ'] ?? this.showOnlyZ;
+            this.id = settings['lastMapId'] ?? this.id;
+        }
+
+        for (let el of document.getElementsByClassName("zi")) {
+            el.style.color = self.showOnlyZ ? 'black' : 'green';
+        }
+        for (let el of document.getElementsByClassName("height")) {
+            el.style.color = self.showOnlyZ ? 'green' : 'black';
         }
     },
 
@@ -187,7 +224,8 @@ const Isometric = {
             hideOffMap: this.hideOffMap,
             ZOffset: this.ZOffset,
             altitudePadding: this.altitudePadding,
-            drawSpecialCellsImg: this.drawSpecialCellsImg
+            drawSpecialCellsImg: this.drawSpecialCellsImg,
+            lastMapId: this.id
         }
         localStorage.setItem("settings", JSON.stringify(settings));
     },
@@ -206,10 +244,10 @@ const Isometric = {
         this.minX = 0;
         this.maxY = 0;
         this.minY = 0;
-        IsometricMap.tplg = []
+        // IsometricMap.tplg = []
         for (let i = 0; i < numberOfCells; i++) {
             let cell = IsometricMap.map[i];
-            IsometricMap.tplg.push(cell)
+            // IsometricMap.tplg.push(cell)
             cell.hash = this.packCoordinates(cell.x, cell.y, cell.z);
             if (cell.x > this.maxX) {
                 this.maxX = cell.x;
@@ -238,49 +276,6 @@ const Isometric = {
         }
 
         this.importData();
-
-        const numberOfSpecialCells = IsometricMap.info.specialCells.length
-        for (let i = 0; i < numberOfSpecialCells; i++) {
-            let specialCell = IsometricMap.info.specialCells[i];
-            // this.drawCross(-specialCell.position.y, specialCell.position.x, specialCell.position.z, 'yellow', 0);
-            specialCell.position.hash = this.packCoordinates(specialCell.position.x, specialCell.position.y,
-                                                             specialCell.position.z);
-            specialCell.position.shape = 'S';
-            specialCell.position.value = specialCell.value;
-            specialCell.position.color = 'rgba(255,255,0,0.5)';
-            specialCell.position.height = 0;
-            IsometricMap.map.push(specialCell.position);
-        }
-
-        for (const spt0 of IsometricMap.info.startingPointTeam0) {
-            // this.drawCross(-spt0.y, spt0.x, spt0.z, 'pink')
-            spt0.hash = this.packCoordinates(spt0.x, spt0.y, spt0.z + this.specialCaseHashBais);
-            spt0.shape = 'C'
-            spt0.color = 'rgba(173,180,255,0.5)'
-            spt0.height = 0
-            IsometricMap.map.push(spt0)
-        }
-
-        for (const spt0 of IsometricMap.info.startingPointTeam1) {
-            // this.drawCross(-spt0.y, spt0.x, spt0.z, 'pink')
-            spt0.hash = this.packCoordinates(spt0.x, spt0.y, spt0.z + this.specialCaseHashBais);
-            spt0.shape = 'C'
-            spt0.color = 'rgba(255,213,173,0.5)'
-            spt0.height = 0
-            IsometricMap.map.push(spt0)
-        }
-
-        for (const cp of IsometricMap.info.coachPos) {
-            // this.drawCross(-cp.y, cp.x, cp.z, 'magenta')
-            cp.hash = this.packCoordinates(cp.x, cp.y, cp.z + this.specialCaseHashBais);
-            cp.height = 0
-            cp.shape = 'C'
-            cp.color = 'rgba(0,255,255,0.77)'
-            IsometricMap.map.push(cp)
-        }
-
-        IsometricMap.map.sort((a, b) => (a.hash < b.hash ? -1 : a.hash > b.hash ? 1 : 0))
-        IsometricMap.tplg.sort((a, b) => (a.hash < b.hash ? -1 : a.hash > b.hash ? 1 : 0))
         const mapWidth = this.maxX - this.minX
         const mapHeight = this.maxY - this.minY
         this.Xtiles = mapWidth;
@@ -301,18 +296,21 @@ const Isometric = {
         const numberOfCells = IsometricMap.map.length
         for (let i = 0; i < numberOfCells; i++) {
             let cell = IsometricMap.map[i];
+            let Zi = this.showOnlyZ ? cell.z : cell.z - cell.height;
             if (cell.shape === 'D') {
-                this.drawDiamond(-cell.y, cell.x, cell.z - cell.height, cell.color, cell.height)
+                this.drawDiamond(-cell.y, cell.x, Zi, cell.color, cell.height)
             } else if (cell.shape === 'C') {
-                this.drawCross(-cell.y, cell.x, cell.z - cell.height, cell.color, cell.height)
+                this.drawCross(-cell.y, cell.x, Zi, cell.color, cell.height)
             } else if (cell.shape === 'S') {
                 if (this.drawSpecialCellsImg) {
-                    const offX = (-cell.y) * this.tileColumnOffset / 2 + cell.x * this.tileColumnOffset / 2 + this.originX;
+                    const offX = (-cell.y) * this.tileColumnOffset / 2 + cell.x * this.tileColumnOffset / 2
+                        + this.originX;
                     const offY = cell.x * this.tileRowOffset / 2 - (-cell.y) * this.tileRowOffset / 2 + this.originY;
                     const cellImg = CELL_OFFSET[cell.value] * this.tileColumnOffset
-                    this.context.drawImage(this.specialCellsImg, cellImg, 0, this.tileColumnOffset, this.tileRowOffset, offX, offY, this.tileColumnOffset, this.tileRowOffset);
+                    this.context.drawImage(this.specialCellsImg, cellImg, 0, this.tileColumnOffset, this.tileRowOffset,
+                                           offX, offY, this.tileColumnOffset, this.tileRowOffset);
                 } else {
-                    this.drawCross(-cell.y, cell.x, cell.z - cell.height, cell.color, cell.height)
+                    this.drawCross(-cell.y, cell.x, Zi, cell.color, cell.height)
                 }
             }
         }
@@ -336,19 +334,22 @@ const Isometric = {
                 30)
         }
     },
-    
-    changeMap(id) {
+
+    changeMap(id = this.id) {
         return fetch(`./map/${id}.json`)
             .then(response => response.json())
             .then(mapData => {
-                document.getElementById('preview').src = `https://raw.githubusercontent.com/Jydett/ArenaMaps/main/webp/${id}.png.webp`;
+                document.getElementById(
+                    'preview').src = `https://raw.githubusercontent.com/Jydett/ArenaMaps/main/webp/${id}.png.webp`;
                 this.x = 0;
                 this.originX = 0;
                 this.originY = 0;
                 this.y = 0;
                 this.id = id;
                 IsometricMap.map = mapData.cells["0"];
+                this.saveSettings();
                 this.loadMapDataInCanvas();
+                this.loadSpecialCells();
                 this.redrawTiles();
             });
     },
@@ -382,9 +383,9 @@ const Isometric = {
         this.context.strokeStyle = 'grey';
         this.context.fillStyle = color;
         this.context.lineWidth = 1;
-        this.context.beginPath();        
+        this.context.beginPath();
         this.context.moveTo(offX + (Zi !== 0 ? this.altitudePadding : 0),
-                                                             offY + this.tileRowOffset / 2 + Zi * this.ZOffset);
+                            offY + this.tileRowOffset / 2 + Zi * this.ZOffset);
         this.context.lineTo(offX + this.tileColumnOffset - (Zi !== 0 ? this.altitudePadding : 0),
                             offY + this.tileRowOffset / 2 + Zi * this.ZOffset);
         this.context.lineTo(offX + this.tileColumnOffset / 2,
@@ -457,35 +458,19 @@ const Isometric = {
 
         if (Zi !== 0 && this.ZOffset !== 0) {
             this.drawLine(offX + this.tileRowOffset,
-                                  offY + this.tileColumnOffset / 4,
+                          offY + this.tileColumnOffset / 4,
                           offX + this.tileRowOffset,
                           offY + this.tileRowOffset + Zi * this.ZOffset - (Zi !== 0 ? this.altitudePadding / 2 : 0)
                 , 'magenta')
 
         }
-        
 
-        this.context.fillStyle = 'black'; 
+        this.context.fillStyle = 'black';
         this.context.textAlign = 'center';
         this.context.textBaseline = 'middle';
         this.context.fillText(Zi, offX + this.tileRowOffset,
-                                offY + this.tileColumnOffset / 4 + Zi * this.ZOffset)
-        
+                              offY + this.tileColumnOffset / 4 + Zi * this.ZOffset)
 
-        if (height > 0) {
-            // this.context.strokeStyle = 'green';
-            // this.context.fillStyle = 'green';
-            // this.context.beginPath();
-            // this.context.moveTo(offX, offY + this.tileRowOffset / 2 + Zi * this.ZOffset);
-            // this.context.lineTo(offX, offY + this.tileRowOffset / 2 + (Zi - height) * this.ZOffset);
-            // this.context.lineTo(offX + this.tileColumnOffset / 2, offY + this.tileRowOffset + (Zi - height) * this.ZOffset);
-            // this.context.lineTo(offX + this.tileColumnOffset, offY + this.tileRowOffset / 2 + (Zi - height) * this.ZOffset);
-            // this.context.lineTo(offX + this.tileColumnOffset / 2, offY + (Zi - height) * this.ZOffset);
-            // this.context.lineTo(offX, offY + this.tileRowOffset / 2 + (Zi - height) * this.ZOffset);
-            // this.context.closePath();
-            // this.context.fill();
-            // this.context.stroke();
-        }
     },
 
     drawLine: function (x1, y1, x2, y2, color) {
@@ -511,5 +496,48 @@ const Isometric = {
             ((xBigInt & MASK) << SHIFT_19) |
             ((BigInt(zOrder) & MASK) << SHIFT_6) |
             BigInt(0);
+    },
+    loadSpecialCells() {
+        const numberOfSpecialCells = IsometricMap.info.specialCells.length
+        for (let i = 0; i < numberOfSpecialCells; i++) {
+            let specialCell = IsometricMap.info.specialCells[i];
+            // this.drawCross(-specialCell.position.y, specialCell.position.x, specialCell.position.z, 'yellow', 0);
+            specialCell.position.hash = this.packCoordinates(specialCell.position.x, specialCell.position.y,
+                                                             specialCell.position.z);
+            specialCell.position.shape = 'S';
+            specialCell.position.value = specialCell.value;
+            specialCell.position.color = 'rgba(255,255,0,0.5)';
+            specialCell.position.height = 0;
+            IsometricMap.map.push(specialCell.position);
+        }
+
+        for (const spt0 of IsometricMap.info.startingPointTeam0) {
+            // this.drawCross(-spt0.y, spt0.x, spt0.z, 'pink')
+            spt0.hash = this.packCoordinates(spt0.x, spt0.y, spt0.z + this.specialCaseHashBais);
+            spt0.shape = 'C'
+            spt0.color = 'rgba(173,180,255,0.5)'
+            spt0.height = 0
+            IsometricMap.map.push(spt0)
+        }
+
+        for (const spt0 of IsometricMap.info.startingPointTeam1) {
+            // this.drawCross(-spt0.y, spt0.x, spt0.z, 'pink')
+            spt0.hash = this.packCoordinates(spt0.x, spt0.y, spt0.z + this.specialCaseHashBais);
+            spt0.shape = 'C'
+            spt0.color = 'rgba(255,213,173,0.5)'
+            spt0.height = 0
+            IsometricMap.map.push(spt0)
+        }
+
+        for (const cp of IsometricMap.info.coachPos) {
+            // this.drawCross(-cp.y, cp.x, cp.z, 'magenta')
+            cp.hash = this.packCoordinates(cp.x, cp.y, cp.z + this.specialCaseHashBais);
+            cp.height = 0
+            cp.shape = 'C'
+            cp.color = 'rgba(0,255,255,0.77)'
+            IsometricMap.map.push(cp)
+        }
+
+        IsometricMap.map.sort((a, b) => (a.hash < b.hash ? -1 : a.hash > b.hash ? 1 : 0))
     }
 };

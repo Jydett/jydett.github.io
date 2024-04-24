@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Isometric Tile Test</title>
+    <title>Arena Fight Map Viewer</title>
     <link rel="stylesheet" type="text/css" href="./css/style.css">
     <script src="./js/jquery-2.1.1.js"></script>
     <script src="./js/fightmapinfo.js"></script>
@@ -10,13 +10,19 @@
   </head>
   <body>
     <canvas id="isocanvas"></canvas>
+    <span style="position: absolute; top: 0; left: 0; background-color: gainsboro; border: 1px darkgrey solid; padding: 5px">
+    <div style="position: absolute; right: 0; top: 0; cursor: pointer; border: 1px #3a3a3a solid; width: 12px; height: 12px; text-align: center; z-index: 999" onclick="document.getElementById('selectedCells').innerText = '', (event || window.event).preventDefault(), (event || window.event).stopPropagation()">X</div>
+    <pre id="selectedCells"></pre>
+    </span>
   <div style="position: absolute; top: 0; right: 0; background-color: gainsboro; border: 1px darkgrey solid; padding: 5px">
       <h3>Controls:</h3>
       <div><b>P:</b> activate altitude padding</div>
       <div><b>M:</b> show out of map cells</div>
-      <div><b>Z:</b> toggle flat mode</div>
+      <div><b>F:</b> toggle flat mode</div>
       <div><b>S:</b> toggle special cells img</div>
+      <div><b>H:</b> toggle between <span class="zi">Zi</span> and <span class="height">height</span> display<br><small>(show cells at <span class="zi">bottom</span> of their location or their <span class="height">top</span>)</small></div>
       <div><b>Arrows:</b> move selected chunk</div>
+      <div><b>Right-click</b> to select a cell</div>
       <h3>Legend:</h3>
       <div><span class="colorpreview" style="background-color: white"></span> walkable</div>
       <div><span class="colorpreview" style="background-color: red"></span> not-walkable</div>
@@ -27,7 +33,7 @@
       <div><span class="colorpreview" style="background-color: rgba(255,255,0,0.5)"></span> special cells</div>
       <h3>Current map id: <select name="map" id="mapSelect">
       </select></h3>
-      <div tabindex="100" onmouseleave="document.getElementById('preview').style.display = 'none'" onmouseenter="document.getElementById('preview').style.display = 'block'" style="cursor: pointer">SEE IMG</div>
+      <div tabindex="100" onmouseleave="document.getElementById('preview').style.display = 'none'" onmouseenter="document.getElementById('preview').style.display = 'block'" style="cursor: pointer">Hover to preview map</div>
       <script>
           mapSelect = document.getElementById('mapSelect');
           let allMaps = [5, 10, 12, 15, 21, 52, 53, 54, 55, 56, 58, 59, 60, 61, 64, 65, 66, 67, 68, 69, 71, 72, 73, 74, 75, 77, 81, 82, 83, 84];
@@ -37,6 +43,5 @@
       </script>
   </div>
   <img style="display: none; position: absolute; bottom: 0; left: 0; z-index: -100; max-width: 50%; max-height: 50%; object-fit: contain;" id="preview" src="https://raw.githubusercontent.com/Jydett/ArenaMaps/main/webp/5.png.webp">
-  
   </body>
 </html>
