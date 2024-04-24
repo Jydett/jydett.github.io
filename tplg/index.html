@@ -6,7 +6,6 @@
     <script src="./js/jquery-2.1.1.js"></script>
     <script src="./js/fightmapinfo.js"></script>
     <script src="./js/isometric.js"></script>
-    <script src="./js/map_10.js"></script>
     <script>$(function() { Isometric.run() });</script>
   </head>
   <body>
@@ -26,8 +25,18 @@
       <div><span class="colorpreview" style="background-color: rgba(255,213,173,0.5)"></span> team positions 2</div>
       <div><span class="colorpreview" style="background-color: rgba(0,255,255,0.77)"></span> coach positions</div>
       <div><span class="colorpreview" style="background-color: rgba(255,255,0,0.5)"></span> special cells</div>
-      <h3>Current map id: <span id="mapId"></span></h3>
+      <h3>Current map id: <select name="map" id="mapSelect">
+      </select></h3>
+      <div tabindex="100" onmouseleave="document.getElementById('preview').style.display = 'none'" onmouseenter="document.getElementById('preview').style.display = 'block'" style="cursor: pointer">SEE IMG</div>
+      <script>
+          mapSelect = document.getElementById('mapSelect');
+          let allMaps = [5, 10, 12, 15, 21, 52, 53, 54, 55, 56, 58, 59, 60, 61, 64, 65, 66, 67, 68, 69, 71, 72, 73, 74, 75, 77, 81, 82, 83, 84];
+          allMaps.forEach(function(mapId) {
+              mapSelect.appendChild(new Option(mapId, mapId));
+          });
+      </script>
   </div>
+  <img style="display: none; position: absolute; bottom: 0; left: 0; z-index: -100; max-width: 50%; max-height: 50%; object-fit: contain;" id="preview" src="https://raw.githubusercontent.com/Jydett/ArenaMaps/main/webp/5.png.webp">
   
   </body>
 </html>

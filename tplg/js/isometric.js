@@ -11,7 +11,19 @@ const CELL_OFFSET = {
     1009: 0
 }
 
+const IsometricMap = {
+    info: {
+        "coachPos": [],
+        "startingPointTeam1": [],
+        "specialCells": [],
+        "startingPointTeam0": [],
+    },
+    map: []
+};
+
+
 const Isometric = {
+    id: 5,
     tileColumnOffset: 32, // pixels
     tileRowOffset: 16, // pixels
     ZOffset: -4, // pixels
@@ -41,8 +53,16 @@ const Isometric = {
     specialCellsImg: new Image(),
 
     run: function () {
+        this.init();
+        this.changeMap(this.id)
+    },
+
+    init: function () {
         this.specialCellsImg.src = "./css/bonus_guide.png";
         this.canvas = $('#isocanvas');
+        $('#mapSelect').on('change', (e) => {
+            this.changeMap(parseInt(e.target.value));
+        });
         this.context = this.canvas[0].getContext("2d");
 
         this.loadSettings();
@@ -50,7 +70,7 @@ const Isometric = {
         const self = this;
         $(window)
             .on('resize', function () {
-                self.updateCanvasSize();
+                self.loadMapDataInCanvas();
                 self.redrawTiles();
             });
 
@@ -149,9 +169,6 @@ const Isometric = {
                 self.showCoordinates = !self.showCoordinates;
                 self.redrawTiles();
             });
-
-        this.updateCanvasSize();
-        this.redrawTiles();
     },
 
     loadSettings: function () {
@@ -175,7 +192,7 @@ const Isometric = {
         localStorage.setItem("settings", JSON.stringify(settings));
     },
 
-    updateCanvasSize: function () {
+    loadMapDataInCanvas: function () {
         const width = $(window)
             .width();
         const height = $(window)
@@ -319,10 +336,25 @@ const Isometric = {
                 30)
         }
     },
+    
+    changeMap(id) {
+        return fetch(`./map/${id}.json`)
+            .then(response => response.json())
+            .then(mapData => {
+                document.getElementById('preview').src = `https://raw.githubusercontent.com/Jydett/ArenaMaps/main/webp/${id}.png.webp`;
+                this.x = 0;
+                this.originX = 0;
+                this.originY = 0;
+                this.y = 0;
+                this.id = id;
+                IsometricMap.map = mapData.cells["0"];
+                this.loadMapDataInCanvas();
+                this.redrawTiles();
+            });
+    },
 
     importData: function () {
-        let id = IsometricMap.info.id;
-        document.getElementById('mapId').innerText = id;
+        let id = this.id;
         for (const fightInfo of FIGHT_MAP_INFO) {
             if (fightInfo.id === id) {
                 IsometricMap.info = fightInfo;
