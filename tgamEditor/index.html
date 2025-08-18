@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="http_cdn.rawgit.com_magicien_undo-canvas_v0.1.3_undo-canvas.js"></script>
+  <script src="PNG.js"></script>
+  <meta charset="UTF-8">
+  <title>TGAM reader</title>
+  <style>
+    .bordered {
+      user-select: none;
+      cursor: pointer;
+      color: #1B1212;
+      border: solid 1px #1B1212;
+    }
+    .bordered:hover {
+      background-color: darkgrey;
+    }
+    .bordered + input {
+      display: none;
+    }
+    .transpBG {
+      background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAQMAAABIeJ9nAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAZQTFRFaGho7u7uMiM7LwAAAAxJREFUeJxjcGBoAAABRADBOnocVgAAAABJRU5ErkJggg==') repeat;
+    }
+  </style>
+</head>
+<body>
+
+
+<label for="file" class="bordered">Select TGAM</label>
+<input type="file" id="file" accept=".tgam"/>
+<span id="tgamname"></span>
+
+<br>
+
+<table class="imgs" style="display: none">
+  <thead>
+    <tr>
+      <th>MASK <small>(x:<input type="number" id="maskResize" style="width: 30px; display: inline-block" onchange="changeResize(this)" value="1">)</small></th>
+      <th>DATA</th>
+      <th>MERGED</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="transpBG">
+      <td><img id="img"/></td>
+      <td><img id="img2"/></td>
+      <td><img id="img3"/></td>
+    </tr>
+    <tr id="afterLoad" style="visibility: hidden">
+      <td>
+        <label for="editMask" class="bordered">Replace mask</label>
+        <input type="file" id="editMask" accept="image/png"/><br>
+      </td>
+      <td>
+        <label for="editData" class="bordered">Replace data</label>
+        <input type="file" id="editData" accept="image/png"/><br>
+      </td>
+      <td>
+        <span class="bordered" id="saveTGAM">Save TGAM</span>
+      </td>
+    </tr>
+  </tbody>
+</table><br><br>
+<label for="loadANM" class="bordered">LoadANM</label>
+<input type="file" id="loadANM" accept=".anm"/><br>
+<button onclick="downloadANM()">Save ANM</button>
+<input type="number" style="width: 30px" onchange="askForShowShape(this)" value="0">
+<button onclick="showShapes([])">Clear shapes</button>
+
+
+
+<script src="anmReader.js"></script>
+<script>
+
+
+  function changeResize(el) {
+    if (el.value < 1) {
+      el.value = 1;
+    }
+    LOADED_TGAM._maskResize = parseInt(el.value);
+  }
+
+  function askForShowShape(el) {
+    if (!LOADED_ANM.data || ! LOADED_ANM.data.shapes) {
+      el.value = 0;
+      return
+    }
+
+    if (el.value >= LOADED_ANM.data.shapes.length) {
+      el.value = 0;
+    }
+
+    if (el.value < 0) {
+      el.value = LOADED_ANM.data.shapes.length;
+    }
+
+    showShapes([LOADED_ANM.data.shapes[el.value]])
+  }
+
+  class TGAM {
+    _maskResize = 0;
+
+    set maskResize(newValue) {
+      this._maskResize = newValue;
+      document.getElementById("maskResize").value = newValue
+    }
+
+    get maskResize() {
+      return this._maskResize;
+    }
+  }
+
+  const LOADED_TGAM = new TGAM();
+  const LOADED_ANM = {}
+
+  DataView.prototype.$writeByte = function(value) {
+    this.$index = this.$index ? this.$index : 0;
+    let res = this.setInt8(this.$index, value);
+    this.$index = this.$index + 1;
+    return res;
+  }
+
+  DataView.prototype.$writeUByte = function(value) {
+    this.$index = this.$index ? this.$index : 0;
+    let res = this.setUint8(this.$index, value);
+    this.$index = this.$index + 1;
+    return res;
+  }
+
+  DataView.prototype.$writeShort = function(value) {
+    this.$index = this.$index ? this.$index : 0;
+    let res = this.setInt16(this.$index, value, true);
+    this.$index = this.$index + 2;
+    return res;
+  }
+
+  DataView.prototype.$writeInt = function(value) {
+    this.$index = this.$index ? this.$index : 0;
+    let res = this.setInt32(this.$index, value, true);
+    this.$index = this.$index + 4;
+    return res;
+  }
+
+  DataView.prototype.$writeFloat = function(value) {
+    this.$index = this.$index ? this.$index : 0;
+    let res = this.setFloat32(this.$index, value, true);
+    this.$index = this.$index + 4;
+    return res;
+  }
+
+  DataView.prototype.$writeString = function(value) {
+    const textEncoder = new TextEncoder("utf-8");
+    let encoded = textEncoder.encode(value);
+    for (let byte of encoded) {
+      this.$writeByte(byte)
+    }
+    this.$writeByte(0)
+  }
+  
+  DataView.prototype.$getShort = function() {
+    this.$index = this.$index ? this.$index : 0;
+    let res = this.getInt16(this.$index, true);
+    this.$index = this.$index + 2;
+    return res;
+  }
+
+  DataView.prototype.$getInt = function() {
+    this.$index = this.$index ? this.$index : 0;
+    let res = this.getInt32(this.$index, true);
+    this.$index = this.$index + 4;
+    return res;
+  }
+
+  DataView.prototype.$getFloat = function() {
+    this.$index = this.$index ? this.$index : 0;
+    let res = this.getFloat32(this.$index, true);
+    this.$index = this.$index + 4;
+    return res;
+  }
+
+  DataView.prototype.$getByte = function() {
+    this.$index = this.$index ? this.$index : 0;
+    let res = this.getInt8(this.$index);
+    this.$index = this.$index + 1;
+    return res;
+  }
+
+  DataView.prototype.$getBytes = function(size) {
+    this.$index = this.$index ? this.$index : 0;
+    let res = new DataView(this.buffer, this.$index, size);
+    this.$index = this.$index + size;
+    return res;
+  }
+
+  DataView.prototype.$noBytesLeft = function() {
+    return this.byteLength === this.$index;
+  }
+
+  DataView.prototype.$getBit = function (i) {
+    let index = i % 8;
+    return (this.getInt8(Math.floor(i / 8)) >> index) & 1;
+  }
+
+  DataView.prototype.get = function (index) {
+    let unitPosition = index >> 3;
+    if (unitPosition >= this.byteLength) {
+      throw "trying to get a bit index=" + index + " but only " + (this.byteLength * 8) + " available.";
+    }
+    let bitPosition = 7 - (index - (unitPosition << 3));
+    return (this.getInt8(unitPosition) & (1 << bitPosition)) != 0x0;
+  }
+
+  DataView.prototype.$getMaskedValue = function (x, y, width, resize) {
+    let index = Math.floor(y / resize) * Math.ceil(width / resize) + Math.floor(x / resize);
+    try {
+      return this.get(index);
+    } catch (e) {
+      console.error(e, "x: " + x + ", y: " + y + ", width: " + width + ", resize: " + resize + " => " + index)
+      return 0
+    }
+  }
+
+  DataView.prototype.$getString = function () {
+    this.$index = this.$index ? this.$index : 0;
+    let saveOffset = this.$index;
+    while (this.getInt8(this.$index) != 0) {
+      this.$index++;
+    }
+    let size = this.$index - saveOffset;
+    this.$index = saveOffset;
+    let textDecoder = new TextDecoder("utf-8");
+    let res = textDecoder.decode(this.$getBytes(size));
+    this.$index = this.$index + 1;// skip \u0000 terminator
+    return res;
+  }
+
+
+  function nearestGreatestPowOfTwo(value) {
+    if (value < 2) {
+      return value;
+    } else {
+      value--;
+      value |= value >> 1;
+      value |= value >> 2;
+      value |= value >> 4;
+      value |= value >> 8;
+      value |= value >> 16;
+      value++;
+      return value;
+    }
+  }
+
+  function updateImgFromCanvas(canvas, id) {
+    let el = document.getElementById(id);
+    el.src = canvas.toDataURL('image/png');
+  }
+
+  function paintMergedCanvas() {
+    const mergedCanvasContext = LOADED_TGAM.mergedCanvas.getContext('2d');
+    mergedCanvasContext.clearRect(0, 0, LOADED_TGAM.pWidth, LOADED_TGAM.pHeight)
+    mergedCanvasContext.drawImage(LOADED_TGAM.maskCanvas, 0, 0)
+    mergedCanvasContext.drawImage(LOADED_TGAM.imgCanvas, 0, 0)
+  }
+
+  function downloadANM() {
+    let res = writeANM(LOADED_ANM.data);
+    download(res, LOADED_ANM.fileName)
+  }
+
+  function showShapes(shapes) {
+    let ctx = LOADED_TGAM.imgCanvas.getContext('2d');
+    UndoCanvas.enableUndo(ctx)
+    ctx.putTag()
+    ctx.save()
+    // ctx.clearRect(0, 0, LOADED_TGAM.pWidth, LOADED_TGAM.pHeight)
+    ctx.lineWidth = 1;
+    // ctx.imageSmoothingEnabled = false;
+    ctx.strokeStyle = '#ff0000';
+    for (let shape of shapes) {
+      let y = LOADED_TGAM.pHeight - LOADED_TGAM.pHeight * shape.bottom;
+      let x = LOADED_TGAM.pWidth * shape.right;
+      let y2 = LOADED_TGAM.pHeight - LOADED_TGAM.pHeight * shape.top;
+      let x2 = LOADED_TGAM.pWidth * shape.left;
+      ctx.strokeRect(x2, y, x - x2, y2 - y)
+    }
+    updateImgFromCanvas(LOADED_TGAM.imgCanvas, "img2");
+    ctx.undoTag()
+    ctx.restore()
+    UndoCanvas.disableUndo(ctx)
+  }
+
+  document.getElementById("loadANM").addEventListener('change', async function() {
+    // no file selected to read
+    let fileInput = document.querySelector("#loadANM");
+    if (fileInput.value == '') {
+      console.log('No file selected');
+      return;
+    }
+
+    let file = fileInput.files[0];
+    LOADED_ANM.fileName = file.name;
+
+    let reader = new FileReader();
+    reader.onload = function (e) {
+      let res = loadANM(e);
+      res.fileName = LOADED_ANM.fileName
+      console.log(res);
+      LOADED_ANM.data = res;
+      if (LOADED_TGAM.imgCanvas) {
+        showShapes(res.shapes)
+      }
+    };
+
+    reader.onerror = function(e) {
+      // error occurred
+      console.error('Error : ' + e.type);
+    };
+
+    reader.readAsArrayBuffer(file);
+  });
+
+  document.getElementById("file").addEventListener('change', async function() {
+    // no file selected to read
+    if(document.querySelector("#file").value == '') {
+      console.log('No file selected');
+      return;
+    }
+
+    var file = document.querySelector("#file").files[0];
+    document.getElementById("tgamname").innerHTML = file.name;
+    document.getElementsByClassName("imgs")[0].style.display = "unset";
+
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      if (LOADED_TGAM.maskCanvas) {
+        LOADED_TGAM.maskCanvas.getContext('2d').clearRect(0, 0, LOADED_TGAM.pWidth, LOADED_TGAM.pHeight)
+        LOADED_TGAM.maskCanvas = null;
+      }
+
+      if (LOADED_TGAM.imgCanvas) {
+        LOADED_TGAM.imgCanvas.getContext('2d').clearRect(0, 0, LOADED_TGAM.pWidth, LOADED_TGAM.pHeight)
+        LOADED_TGAM.imgCanvas = null;
+      }
+
+      if (LOADED_TGAM.mergedCanvas) {
+        LOADED_TGAM.mergedCanvas.getContext('2d').clearRect(0, 0, LOADED_TGAM.pWidth, LOADED_TGAM.pHeight)
+        LOADED_TGAM.mergedCanvas = null;
+      }
+      
+      
+      let dataView = new DataView(e.target.result)
+
+      let resizeMask = dataView.$getByte() == 109;
+      console.log("resizeMask", resizeMask);
+      dataView.$getByte();
+      dataView.$getByte();
+      dataView.$getByte();
+
+      let imgWidth = dataView.$getShort();
+      let imgHeight = dataView.$getShort();
+      let tgaSize = dataView.$getInt();
+      let maskSize = dataView.$getInt();
+      let maskResize = (resizeMask ? dataView.$getByte() : 1);
+
+      LOADED_TGAM.imgWidth = imgWidth;
+      LOADED_TGAM.imgHeight = imgHeight;
+
+      let imgPWidth = nearestGreatestPowOfTwo(imgWidth);
+      let imgPHeight = nearestGreatestPowOfTwo(imgHeight);
+      LOADED_TGAM.pWidth = imgPWidth;
+      LOADED_TGAM.pHeight = imgPHeight;
+      LOADED_TGAM.maskResize = maskResize;
+
+
+      console.log("header end at ", dataView.$index)
+
+      console.log("imgWidth", imgWidth, "imgHeight", imgHeight, "tgaSize", tgaSize, "maskSize", maskSize);
+      console.log("maskResize", maskResize);
+      console.log("imgPWidth", imgPWidth, "imgPHeight", imgPHeight);
+
+      console.log(dataView.byteLength, dataView.byteOffset, dataView.buffer)
+      let data = dataView.$getBytes(tgaSize);
+      console.log("image data end at ", dataView.$index)
+      console.log(dataView.byteLength, dataView.byteOffset, dataView.buffer)
+      console.log(data.byteLength, data.byteOffset, data.buffer)
+
+      let bitMask = dataView.$getBytes(maskSize);
+      LOADED_TGAM.bitMask = bitMask;
+
+      LOADED_TGAM.maskCanvas = document.createElement('canvas');
+      LOADED_TGAM.maskCanvas.width = imgPWidth;
+      LOADED_TGAM.maskCanvas.height = imgPHeight;
+      const maskContext = LOADED_TGAM.maskCanvas.getContext('2d');
+      maskContext.imageSmoothingEnabled = false;
+
+      LOADED_TGAM.imgCanvas = document.createElement('canvas');
+      LOADED_TGAM.imgCanvas.width = imgPWidth;
+      LOADED_TGAM.imgCanvas.height = imgPHeight;
+      const imgContext = LOADED_TGAM.imgCanvas.getContext('2d');
+      imgContext.imageSmoothingEnabled = false;
+      LOADED_TGAM.imgData = new ArrayBuffer(imgPHeight * imgPWidth * 4)
+      let imgDataView = new DataView(LOADED_TGAM.imgData);
+
+      for (let x = 0; x < imgPHeight; x++) {
+        for (let y = 0; y < imgPWidth; y++) {
+          let rb = data.$getByte() & 0xff;
+          imgDataView.$writeByte(rb);
+          let r = ('0' + rb.toString(16)).slice(-2);
+          let gb = data.$getByte() & 0xff;
+          imgDataView.$writeByte(gb);
+          let g = ('0' + gb.toString(16)).slice(-2);
+          let bb = data.$getByte() & 0xff;
+          imgDataView.$writeByte(bb);
+          let b = ('0' + bb.toString(16)).slice(-2);
+          let ab = data.$getByte() & 0xff;
+          imgDataView.$writeByte(ab);
+          let a = ('0' + ab.toString(16)).slice(-2);
+
+          imgContext.fillStyle = "#" + r + g + b + a;
+          imgContext.fillRect(y, imgPHeight - x - 1, 1, 1);
+          if (x >= imgHeight || y >= imgWidth || !bitMask.$getMaskedValue(y, x, imgWidth, maskResize)) {
+            maskContext.fillStyle = "#000000FF";
+          } else {
+            maskContext.fillStyle = "#FFFFFFFF";
+          }
+          maskContext.fillRect(y, x, 1, 1);
+        }
+      }
+
+      console.assert(data.$noBytesLeft())
+      console.assert(dataView.$noBytesLeft())
+
+      LOADED_TGAM.mergedCanvas = document.createElement('canvas');
+      LOADED_TGAM.mergedCanvas.width = imgPWidth;
+      LOADED_TGAM.mergedCanvas.height = imgPHeight;
+      paintMergedCanvas();
+
+      updateImgFromCanvas(LOADED_TGAM.maskCanvas, "img");
+      updateImgFromCanvas(LOADED_TGAM.mergedCanvas, "img3");
+      updateImgFromCanvas(LOADED_TGAM.imgCanvas, "img2");
+
+      document.getElementById("afterLoad").style.visibility = 'visible'
+    };
+
+    reader.onerror = function(e) {
+      // error occurred
+      console.error('Error : ' + e.type);
+    };
+    reader.readAsArrayBuffer(file);
+  });
+
+  async function changeData(id, canvas) {
+    // no file selected to read
+    let imageSelectorElement = document.getElementById(id);
+    if(imageSelectorElement.value == '') {
+      console.log('No file selected');
+      return;
+    }
+    const file = imageSelectorElement.files[0];
+    if (!file) return;
+    if (file.type !== "image/png") return;
+
+    file.arrayBuffer().then(data => {
+      const result = UPNG.decode(data);
+
+      let colorData = new Uint8Array(UPNG.toRGBA8(result)[0]);
+
+      const imgContext = canvas.getContext('2d');
+      imgContext.clearRect(0, 0, LOADED_TGAM.pWidth, LOADED_TGAM.pHeight)
+
+      if ("editData" == id) {
+
+
+        if (result.height != LOADED_TGAM.pHeight ||
+                result.width != LOADED_TGAM.pWidth) {
+          throw "Incompatible sizes original (" + LOADED_TGAM.pWidth + "x" + LOADED_TGAM.pHeight +
+          "), edited (" + result.width + "x" + result.height + ")"
+        }
+
+        LOADED_TGAM.imgData = new ArrayBuffer(LOADED_TGAM.pWidth * LOADED_TGAM.pHeight * 4)
+        let imgDataView = new DataView(LOADED_TGAM.imgData);
+        for (let x = 0; x < LOADED_TGAM.pHeight; x++) {
+          for (let y = 0; y < LOADED_TGAM.pWidth; y++) {
+            let index = ((x * LOADED_TGAM.pWidth) + y) * 4;
+            let rb = colorData[index] & 0xff;
+            let r = ('0' + rb.toString(16)).slice(-2);
+            let gb = colorData[index + 1] & 0xff;
+            let g = ('0' + gb.toString(16)).slice(-2);
+            let bb = colorData[index + 2] & 0xff;
+            let b = ('0' + bb.toString(16)).slice(-2);
+            let ab = colorData[index + 3] & 0xff;
+            let a = ('0' + ab.toString(16)).slice(-2);
+            if (ab == 0) {
+              rb = 0;
+              gb = 0;
+              bb = 0;
+            }
+            imgDataView.$writeByte(rb);
+            imgDataView.$writeByte(gb);
+            imgDataView.$writeByte(bb);
+            imgDataView.$writeByte(ab);
+
+            // let xp = LOADED_TGAM.pHeight - 1 - x;
+            imgContext.fillStyle = "#" + r + g + b + a;
+            imgContext.fillRect(y, LOADED_TGAM.pHeight - x - 1, 1, 1);
+          }
+        }
+      } else {
+
+        LOADED_TGAM.maskResize = 1;
+        for (let x = LOADED_TGAM.pHeight - 1; x >= 0; x--) {
+          for (let y = 0; y < LOADED_TGAM.pWidth; y++) {
+            let index = ((x * LOADED_TGAM.pWidth) + y) * 4;
+            let rb = colorData[index] & 0xff;
+            let r = ('0' + rb.toString(16)).slice(-2);
+            let gb = colorData[index + 1] & 0xff;
+            let g = ('0' + gb.toString(16)).slice(-2);
+            let bb = colorData[index + 2] & 0xff;
+            let b = ('0' + bb.toString(16)).slice(-2);
+            let ab = colorData[index + 3] & 0xff;
+            let a = ('0' + ab.toString(16)).slice(-2);
+
+            imgContext.fillStyle = "#" + r + g + b + a;
+            imgContext.fillRect(y, x, 1, 1);
+          }
+        }
+      }
+
+      paintMergedCanvas()
+
+      if ("editMask" == id) {
+        updateImgFromCanvas(LOADED_TGAM.maskCanvas, "img");
+      } else {
+        updateImgFromCanvas(LOADED_TGAM.imgCanvas, "img2");
+      }
+      
+      updateImgFromCanvas(LOADED_TGAM.mergedCanvas, "img3");
+    })
+  }
+
+  document.getElementById("editMask").addEventListener('change', e => changeData("editMask", LOADED_TGAM.maskCanvas));
+  document.getElementById("editData").addEventListener('change', e => changeData("editData", LOADED_TGAM.imgCanvas));
+
+  async function saveTGAM() {
+    let pixelInImage = (LOADED_TGAM.pHeight * LOADED_TGAM.pWidth) * 4;
+    let maskWidthWithResize = Math.ceil(LOADED_TGAM.imgWidth / LOADED_TGAM.maskResize) * LOADED_TGAM.maskResize;
+    let optimizedMaskSize = Math.ceil(Math.ceil((maskWidthWithResize * LOADED_TGAM.imgHeight) / 8) / (LOADED_TGAM.maskResize*LOADED_TGAM.maskResize));
+    let fullSize = optimizedMaskSize + pixelInImage + (LOADED_TGAM.maskResize > 1 ? 17 : 16);
+    const bytes = new DataView(new ArrayBuffer(fullSize));
+    bytes.$writeByte(LOADED_TGAM.maskResize > 1 ? 109 : 0);
+    bytes.$writeByte('R'.charCodeAt(0))
+    bytes.$writeByte('E'.charCodeAt(0))
+    bytes.$writeByte('T'.charCodeAt(0))
+    bytes.$writeShort(LOADED_TGAM.imgWidth);
+    bytes.$writeShort(LOADED_TGAM.imgHeight);
+    bytes.$writeInt((LOADED_TGAM.pHeight * LOADED_TGAM.pWidth) * 4);// TGASize 4BPP
+    bytes.$writeInt(optimizedMaskSize);// MaskSize 1BiPP
+
+    if (LOADED_TGAM.maskResize > 1) {
+      bytes.$writeByte(LOADED_TGAM.maskResize)
+    }
+    console.log("header end at ", bytes.$index)
+
+    let imgDataView = new DataView(LOADED_TGAM.imgData);
+    let outIndex = bytes.$index;
+
+    // for (let x = 0; x < LOADED_TGAM.imgWidth; x++) {
+    for (let x = 0; x < LOADED_TGAM.pHeight; x++) {
+      // for (let y = LOADED_TGAM.pWidth - 1; y >= 0; y--) {
+      for (let y = 0; y < LOADED_TGAM.pWidth; y++) {
+        let baseIndex = ((x * LOADED_TGAM.pWidth) + y) * 4;
+
+        bytes.setInt8(outIndex + 0, imgDataView.getUint8(baseIndex + 0));
+        bytes.setInt8(outIndex + 1, imgDataView.getUint8(baseIndex + 1));
+        bytes.setInt8(outIndex + 2, imgDataView.getUint8(baseIndex + 2));
+        bytes.setInt8(outIndex + 3, imgDataView.getUint8(baseIndex + 3));
+        outIndex = outIndex + 4
+      }
+    }
+
+    bytes.$index = outIndex;
+    console.log("image data end at ", bytes.$index)
+    // let initialColor = (bytes.$index % 2 === 0 ? 0 : 1);
+
+    let markContext = LOADED_TGAM.maskCanvas.getContext('2d');
+    let markData = markContext.getImageData(0, 0, maskWidthWithResize, LOADED_TGAM.imgHeight).data;
+    console.log("Max mask index = ", maskWidthWithResize * LOADED_TGAM.imgHeight * 4)
+    let white = 0, black = 0;
+    for (let i = 0; i < optimizedMaskSize; i++) {
+      let byte = 0;
+      //For each bit of the mask
+      for (let j = 0; j < 8; j++) {
+        let pixelNumber = ((i * 8) + j) * LOADED_TGAM.maskResize;
+        let bitColorIndex = pixelNumber * 4;//jump from red channel to the red channel of the next pixel, according to the mask size
+        let yIndex = Math.floor(pixelNumber / (maskWidthWithResize));
+        bitColorIndex = bitColorIndex + (((yIndex * maskWidthWithResize) * (LOADED_TGAM.maskResize-1)) * 4);//skip lines according to the mask size
+        // console.log("mi: ", bitColorIndex, markData[bitColorIndex], "yIndex", yIndex, "color", ((bytes.$index % 2 === initialColor) ? "red" : "blue"))
+        if (markData[bitColorIndex] === undefined) continue
+        if (markData[bitColorIndex] === 255) {
+          byte |= (1 << (7 - j));
+          white++
+        } else {
+          black++;
+        }
+      }
+      // console.log(byte)
+      bytes.$writeUByte(byte);
+    }
+
+    console.log("optimizedMaskSize", optimizedMaskSize)
+
+    console.log("white", white / (white + black), "black", black / (white + black))
+
+    download(bytes, LOADED_TGAM.fileName)
+  }
+
+  function download(view, name) {
+    let element = document.getElementById("downloader");
+    let blob = new Blob([view.buffer], {type: "octet/stream"});
+    let url = window.URL.createObjectURL(blob);
+    element.href = url;
+    element.download = name;
+    element.click();
+    window.URL.revokeObjectURL(url);
+  }
+
+  document.getElementById("saveTGAM").addEventListener('click', saveTGAM)
+</script>
+<a id="downloader" style="display: none"/>
+</body>
+</html>
