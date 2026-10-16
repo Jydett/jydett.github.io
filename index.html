@@ -2,14 +2,91 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <link rel="icon" href="/favicon.ico">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vite App</title>
-    <script type="module" crossorigin src="/assets/index-ef6b8892.js"></script>
-    <link rel="stylesheet" href="/assets/index-64d9fea7.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A collection of Dofus Arena tools and references: game history, replay decoding, spell cards, fight maps, game assets, and hat comparisons.">
+    <meta name="theme-color" content="#f6f7f2">
+    <link rel="icon" href="./favicon.ico">
+    <link rel="stylesheet" href="./home.css">
+    <title>Dofus Arena tools &amp; references</title>
   </head>
   <body>
-    <div id="app"></div>
-    
+    <a class="skip-link" href="#tools">Skip to tools</a>
+    <header class="site-header page-width">
+      <a class="brand" href="./" aria-label="Arena tools home">
+        <span class="brand-mark" aria-hidden="true">a.</span>
+        <span>Arena tools</span>
+      </a>
+      <span class="header-note">The browser collection</span>
+    </header>
+
+    <main class="page-width">
+      <section class="intro" aria-labelledby="page-title">
+        <p class="eyebrow">Explore · Inspect · Create</p>
+        <h1 id="page-title">Dofus Arena tools<br><span>&amp; references.</span></h1>
+        <p class="intro-copy">Explore the game's history, look inside its files, and create something of your own. A collection of web tools for Dofus Arena, all in one place.</p>
+      </section>
+
+      <section id="tools" aria-labelledby="tools-title">
+        <div class="section-heading">
+          <h2 id="tools-title">The collection</h2>
+          <span>6 projects</span>
+        </div>
+        <ul class="tool-grid">
+          <li>
+            <a class="tool" href="./timeline/">
+              <div class="tool-meta"><span class="tool-number">01 / History</span><span class="arrow" aria-hidden="true">↗</span></div>
+              <h3>Arena Timeline</h3>
+              <p>Browse an interactive history of Dofus Arena, from releases and client builds to announcements and videos.</p>
+              <span class="tool-path">timeline/</span>
+            </a>
+          </li>
+          <li>
+            <a class="tool" href="./replay/">
+              <div class="tool-meta"><span class="tool-number">02 / Analysis</span><span class="arrow" aria-hidden="true">↗</span></div>
+              <h3>Replay Decoder</h3>
+              <p>Drop in a replay file to decode its contents and inspect the recorded events and their data.</p>
+              <span class="tool-path">replay/</span>
+            </a>
+          </li>
+          <li>
+            <a class="tool" href="./card/">
+              <div class="tool-meta"><span class="tool-number">03 / Creation</span><span class="arrow" aria-hidden="true">↗</span></div>
+              <h3>Spell Card Editor</h3>
+              <p>Create an Arena spell card with custom artwork, effects, costs, range, and targeting, then save your card.</p>
+              <span class="tool-path">card/</span>
+            </a>
+          </li>
+          <li>
+            <a class="tool" href="./tplg/">
+              <div class="tool-meta"><span class="tool-number">04 / Maps</span><span class="arrow" aria-hidden="true">↗</span></div>
+              <h3>Fight Map Viewer</h3>
+              <p>Inspect isometric fight maps, cell heights, walkable areas, special cells, and team starting positions.</p>
+              <span class="tool-path">tplg/</span>
+            </a>
+          </li>
+          <li>
+            <a class="tool" href="./tgamEditor/">
+              <div class="tool-meta"><span class="tool-number">05 / Assets</span><span class="arrow" aria-hidden="true">↗</span></div>
+              <h3>TGAM &amp; ANM Editor</h3>
+              <p>Open TGAM textures, inspect and replace masks and image data, and load or save ANM animation files.</p>
+              <span class="tool-path">tgamEditor/</span>
+            </a>
+          </li>
+          <li>
+            <a class="tool" href="./killme/">
+              <div class="tool-meta"><span class="tool-number">06 / Reference</span><span class="arrow" aria-hidden="true">↗</span></div>
+              <h3>Hat Placement Gallery</h3>
+              <p>Compare before and after hat placement on every fighter, with reference sheets showing all 16 equipped hats.</p>
+              <span class="tool-path">killme/</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="site-footer page-width">
+      <span>Arena tools &amp; references</span>
+      <span>Choose a project to get started.</span>
+    </footer>
   </body>
 </html>
