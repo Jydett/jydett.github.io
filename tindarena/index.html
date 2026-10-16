@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f5f3ed">
+  <meta name="description" content="Compare fighter hat placement, choose the best version, and export your review as JSON.">
+  <title>Frame Review · Hat placement</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Frame Review home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="5" width="26" height="22" rx="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16 5v22M10 12l-4 4 4 4m12-8 4 4-4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>frame<span class="brand-light">review</span></span></a>
+      <button id="export-top" class="text-button" type="button" disabled>Export JSON <span aria-hidden="true">↗</span></button>
+    </header>
+
+    <main id="review" hidden>
+      <section class="progress-section" aria-label="Review progress">
+        <div class="progress-label"><span class="eyebrow">HAT PLACEMENT / REVIEW</span><span id="progress-label" class="count"></span></div>
+        <progress id="progress" value="0" max="896" aria-label="Completed comparisons"></progress>
+        <div class="session-line"><span id="save-status">Saved on this device</span><button class="text-button small" id="jump-toggle" type="button" aria-expanded="false" aria-controls="jump-panel">Jump to fighter ↓</button></div>
+        <div id="jump-panel" class="jump-panel" hidden><label for="fighter-select">Fighter</label><select id="fighter-select"></select><button id="jump" type="button" class="text-button">Go →</button></div>
+      </section>
+
+      <section class="comparison-section" aria-labelledby="comparison-title">
+        <div class="comparison-heading"><div><p class="eyebrow" id="comparison-index"></p><h1 id="comparison-title"></h1></div><button class="view-toggle" id="view-toggle" type="button" aria-pressed="false">Full fighter <span aria-hidden="true">⤢</span></button></div>
+        <p class="animation-note">2_AnimStatique <span>·</span> First frame <span>·</span> Direction 2</p>
+        <div id="comparison-stage" class="comparison-stage" aria-label="Swipe left for Before or right for After">
+          <button class="image-card before-card" id="before-card" type="button" aria-pressed="false" aria-label="Choose Before">
+            <span class="card-heading"><span class="version-tag">A</span><span>Before</span><span class="selection-check" aria-hidden="true">✓</span></span>
+            <canvas id="before-image" width="240" height="255" role="img" aria-label="Original hat placement"></canvas>
+            <span class="card-bottom">Original placement</span>
+          </button>
+          <button class="image-card after-card" id="after-card" type="button" aria-pressed="false" aria-label="Choose After">
+            <span class="card-heading"><span class="version-tag">B</span><span>After</span><span class="selection-check" aria-hidden="true">✓</span></span>
+            <canvas id="after-image" width="240" height="255" role="img" aria-label="Adjusted hat placement"></canvas>
+            <span class="card-bottom" id="shift-label">+1.5 px right</span>
+          </button>
+          <span id="swipe-indicator" class="swipe-indicator" aria-hidden="true"></span>
+        </div>
+        <p class="gesture-hint"><span>← Swipe for Before</span><span>Swipe for After →</span></p>
+        <p id="image-error" class="error" hidden>Couldn’t load this comparison. <button class="text-button" id="retry-image" type="button">Try again</button></p>
+        <div class="alternative-choices" role="group" aria-label="Other choices"><button id="neither" type="button" aria-pressed="false">Both need work</button><button id="tie" type="button" aria-pressed="false">Both look good</button></div>
+      </section>
+
+      <section class="decision-section" aria-label="Comment and continue">
+        <div class="comment-label"><label for="comment">Anything to add? <span>Optional</span></label><span id="comment-count">0 / 2000</span></div>
+        <textarea id="comment" rows="2" maxlength="2000" placeholder="e.g. Both are bad — the hat is still too low…"></textarea>
+        <div class="next-row"><button id="previous" class="back-button" type="button" aria-label="Previous comparison">←</button><button id="next" class="next-button" type="button" disabled><span id="next-label">Choose a version to continue</span><span aria-hidden="true">→</span></button></div>
+        <p id="decision-status" class="decision-status" role="status" aria-live="polite">Tap an image or swipe to make your choice.</p>
+      </section>
+    </main>
+
+    <main id="complete" class="complete" hidden>
+      <div class="completion-mark" aria-hidden="true">✓</div><p class="eyebrow">EVERY FRAME, REVIEWED</p><h1>That’s a wrap.</h1><p class="complete-intro">All your choices and comments are ready in one JSON file.</p>
+      <div id="summary" class="summary-grid"></div>
+      <button id="download-complete" class="next-button" type="button">Download review.json <span aria-hidden="true">↓</span></button>
+      <div class="completion-actions"><button id="copy-json" type="button" class="text-button">Copy JSON</button><button id="edit-review" type="button" class="text-button">Review my choices</button></div>
+      <label for="json-preview" class="eyebrow">YOUR EXPORT</label><textarea id="json-preview" readonly rows="10" spellcheck="false" aria-label="Review results as JSON"></textarea>
+      <button id="reset" type="button" class="text-button reset">Start a new review</button><p id="complete-status" role="status" aria-live="polite"></p>
+    </main>
+
+    <section id="loading" class="loading" aria-live="polite"><span class="loader" aria-hidden="true"></span><h1>Loading the comparisons…</h1><p>Every fighter. Every hat. One choice at a time.</p></section>
+    <section id="fatal" class="loading" hidden><h1>The comparisons couldn’t load.</h1><p id="fatal-message"></p><button id="reload" class="next-button" type="button">Reload page</button></section>
+    <footer class="page-footer">A closer look makes a better frame.</footer>
+  </div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
